@@ -8,10 +8,16 @@ public class WonjangApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(WonjangApplication.class, args);
-
-		String lover = "이씨";
-		int age = 27;
-		System.out.println(lover);
+		var test = new Test(); // test변수를 Test클래스를입힌 Object 라고 한다 
+		System.out.println(test.name);
+		test.hello();
 	}
 
+}
+
+class Test {
+	String name = "kim";
+	void hello(){
+		System.out.println("안녕");
+	}
 }
