@@ -1,0 +1,237 @@
+create database attendance_new;
+
+use attendance_new;
+
+CREATE TABLE `role` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `role_name` VARCHAR(255)
+);
+
+-- Kindergartens 테이블 생성 쿼리
+CREATE TABLE `kindergarten` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY, -- idx를 id로 변경하고 AUTO_INCREMENT 설정
+  `kinder_name` VARCHAR(255),
+  `address` VARCHAR(255),
+  `phone_number` VARCHAR(50),
+  `principal_name` VARCHAR(255),
+  -- `establishment_date` DATETIME,  
+  `registration_date` DATETIME
+);
+
+
+-- Classes 테이블 생성 쿼리
+CREATE TABLE `class` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `class_name` VARCHAR(255),
+  `kinder_id` INT,
+  FOREIGN KEY (`kinder_id`) REFERENCES `kindergarten` (`id`) -- 외래 키 설정
+);
+
+-- Users 테이블 생성 쿼리 수정
+-- 피그마 기획안에 주소가 없음 
+CREATE TABLE `user` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY, -- user_id 를 primary key로 할수 있음 AUTO_increment 하지 말고 
+  `user_name` VARCHAR(255),
+  `email` VARCHAR(255) UNIQUE,
+  `phone_number` VARCHAR(50),
+  `user_ids` VARCHAR(255),  
+  `password` VARCHAR(255),
+  -- `solar_birthday` DATE,
+  -- `lunar_birthday` VARCHAR(255),
+  `role_id` INT, -- role 컬럼 대신 role_id 추가
+  `kinder_id` INT,
+  `class_id` INT NULL,
+  `personal_information_option` INT, -- 개인정보 수집 동의 옵션
+  `marketing_information_option` INT,  -- 마케팅정보 수신 동의 옵션
+  `special_note` TEXT,
+  `registration_date` DATETIME,
+  -- `modify_date` DATETIME,
+  FOREIGN KEY (`role_id`) REFERENCES `role` (`id`), -- 외래 키 설정
+  FOREIGN KEY (`kinder_id`) REFERENCES `kindergarten` (`id`), -- Kindergartens 테이블과 외래 키 설정 
+  FOREIGN KEY (`class_id`) REFERENCES `class` (`id`) -- Classes 테이블과 외래 키 설정
+);
+
+-- User_hist 테이블 생성 쿼리
+CREATE TABLE `user_history` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `user_id` INT, -- Users 테이블의 id를 참조 -- history 에 추가된 부분
+  `user_name` VARCHAR(255),
+  `email` VARCHAR(255) UNIQUE,
+  `phone_number` VARCHAR(50),
+  `user_ids` VARCHAR(255),    
+  `password` VARCHAR(255),
+  `role_id` INT,
+  `kinder_id` INT,
+  `class_id` INT,
+  `personal_information_option` INT,
+  `marketing_information_option` INT,    
+  `special_notes` TEXT,
+  `registration_date` DATETIME,
+  -- `modify_date` DATETIME,
+  `change_user_id` VARCHAR(255),  -- 수정자 id 추가
+  `history_reg_date` DATETIME, -- user 테이블 수정 날짜 -- history 에 추가된 부분
+  FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) -- Users 테이블과 1대다 관계 설정
+);
+
+-- 학부모의 자녀 유치원생
+CREATE TABLE `parent_child` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `parent_id` INT,
+  `child_name` VARCHAR(255),  
+  `class_id` INT, -- 또는 tinyint(1) 
+  `gender` INT,  
+  `solar_birthday` DATE,
+  `lunar_birthday` VARCHAR(255),  
+  `personal_infomation` INT,
+  -- `child_id` INT,
+  FOREIGN KEY (`parent_id`) REFERENCES `user` (`id`),
+  FOREIGN KEY (`class_id`) REFERENCES `class` (`id`) -- Classes 테이블과 외래 키 설정
+);
+-- 여기까지 
+
+-- Vehicles 테이블 생성 쿼리 
+CREATE TABLE `vehicle` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `vehicle_info` VARCHAR(255), 
+  `user_id` INT, -- 쿼리로 등록 할 때 운전기사만 참조 될 수 있게 조건 
+  FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) -- Users 테이블과 외래 키 설정
+);
+
+-- Schedules 테이블 생성 쿼리
+CREATE TABLE `schedule` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `date` DATE,
+  `time` TIME,
+  `type` ENUM('Pickup', 'Dropoff'),
+  `vehicle_id` INT,
+  `status` VARCHAR(255), -- 0 = 운행 전, 1 = 운행 중, 2 = 운행 완료, 3 = 운행 취소
+  -- -- `before_tm` DATETIME, 
+  -- `inprogress_tm` DATETIME,    -- 운행 중
+  -- `complete_tm` DATETIME,  -- 운행 완료
+  `reservation_note` TEXT,
+  `created_at` DATETIME, -- 생성 날짜
+  `status_change_time` DATETIME,
+  FOREIGN KEY (`vehicle_id`) REFERENCES `vehicle` (`id`) -- Vehicles 테이블과 외래 키 설정
+);
+
+-- Schedules 테이블 생성 쿼리
+CREATE TABLE `schedule_history` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `schedule_id` INT,  -- 추가
+  `date` DATE,
+  `time` TIME,
+  `type` ENUM('Pickup', 'Dropoff'),
+  `vehicle_id` INT,
+  `status` VARCHAR(255),
+  -- -- `before_tm` DATETIME, 
+  -- `inprogress_tm` DATETIME,    -- 운행 중
+  -- `complete_tm` DATETIME,  -- 운행 완료
+  `reservation_note` TEXT,
+  `created_at` DATETIME,
+  `user_ids` VARCHAR(255),  -- 수정자 id  추가  
+  `history_reg_date` DATETIME,  -- 추가
+  -- FOREIGN KEY (`vehicle_idx`) REFERENCES `vehicle` (`idx`) -- Vehicles 테이블과 외래 키 설정
+  FOREIGN KEY (`schedule_id`) REFERENCES `schedule` (`id`) -- Schedule 테이블과 외래 키 설정
+);
+
+-- drop table Schedule_history;
+
+-- 아직
+-- Reservations 테이블 생성 쿼리
+CREATE TABLE `reservation` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `user_id` INT,
+  `schedule_id` INT,
+  `pickup_location` VARCHAR(255),
+  -- `reservation_period` VARCHAR(255),
+  `reservation_period_start` DATETIME, 
+  `reservation_period_end` DATETIME, 
+  `status` VARCHAR(255), -- 0 = 예약 취소, 1 = 예약 완료
+  -- `reserv_tm` DATETIME, 
+  -- `complete_tm` DATETIME, 
+  -- `cancel_tm` DATETIME,  
+  `registration_date` DATETIME,  
+  `status_change_time` DATETIME,  
+  FOREIGN KEY (`user_id`) REFERENCES `user` (`id`), -- Users 테이블과 외래 키 설정 , 학부모가 에약을 하면 Parent_Child 테이블에서 User 테이블을 참조하는 유치원생을 찾을 수 있음
+  FOREIGN KEY (`schedule_id`) REFERENCES `schedule` (`id`) -- Users 테이블과 외래 키 설정
+);
+
+-- Reservations_history 테이블 생성 쿼리
+CREATE TABLE `reservation_history` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `user_id` INT,
+  `reservation_id` INT,  -- 추가
+  `schedule_id` INT,
+  `pickup_location` VARCHAR(255),
+  -- `reservation_period` VARCHAR(255),
+  `reservation_period_start` DATETIME, 
+  `reservation_period_end` DATETIME, 
+  `status` VARCHAR(255),
+  -- `reserv_tm` DATETIME, 
+  -- `complete_tm` DATETIME, 
+  -- `cancel_tm` DATETIME,  
+  `user_ids` VARCHAR(255),  -- 수정자 id  추가     
+  `history_reg_date` DATETIME,  -- 추가 
+  FOREIGN KEY (`reservation_id`) REFERENCES `reservation` (`id`) -- Users 테이블과 외래 키 설정
+  -- FOREIGN KEY (`schedule_id`) REFERENCES `schedule` (`id`) -- Users 테이블과 외래 키 설정
+);
+
+-- Invitations 테이블 생성 쿼리
+CREATE TABLE `invitation` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `invitation_type` ENUM('Teacher', 'Parent', 'Driver'),
+  `user_id` INT,
+  `status` ENUM('Pending', 'Accepted', 'Declined'),
+  `created_at` DATETIME,
+  FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) -- Users 테이블과 외래 키 설정
+);
+
+-- Notifications 테이블 생성 쿼리
+CREATE TABLE `notification` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `title` VARCHAR(255),
+  `content` TEXT,
+  `user_id` INT,
+  `created_at` DATETIME,
+  `updated_at` DATETIME,
+  FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) -- Users 테이블과 외래 키 설정
+);
+
+
+
+
+-- Attendance 테이블 생성 쿼리
+CREATE TABLE `attendance` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  -- `user_idx` INT,
+  `parent_child_id` INT,
+  `date` DATE,
+  `status` ENUM('Present', 'Absent'), -- 'Pickup', 'Dropoff' 둘 다 적용 
+  `reason` TEXT,
+  -- `vehicle_idx` INT,
+  `schedule_id` INT,
+  `created_at` DATETIME,
+  -- FOREIGN KEY (`user_idx`) REFERENCES `user` (`idx`), -- Users 테이블과 외래 키 설정
+  FOREIGN KEY (`parent_child_id`) REFERENCES `parent_child` (`id`), -- Parent_Child 테이블의 idx 참조 아이가 출석, 결석 하는 거니까
+  -- FOREIGN KEY (`vehicle_idx`) REFERENCES `vehicle` (`idx`) -- Vehicles 테이블과 외래 키 설정
+  FOREIGN KEY (`schedule_id`) REFERENCES `schedule` (`id`) -- Vehicles 테이블과 외래 키 설정
+);
+
+
+/*
+--  잘되는 쿼리 
+-- Roles 테이블에 데이터 삽입
+INSERT INTO `role` (`role_name`) VALUES
+('parent'),
+('teacher'),
+('driver'),
+('principal'),
+-- ('child');
+('admin');
+*/
+
+
+show tables;
+select * from role
+select count(*) from role
+ -- 인덱스는 예약어라서 조회가 힘들고 겹침 id로변경
