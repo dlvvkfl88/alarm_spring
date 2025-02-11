@@ -1,0 +1,11 @@
+. Hibernate 자동 DDL 업데이트 비활성화
+Hibernate가 어플리케이션 실행 시 스키마를 업데이트하면서
+외래키 제약조건에 걸리는 컬럼(특히 id, user_id 등의 auto-increment 컬럼)을 변경하려 할 때 문제가 발생합니다.
+해결 방법:
+application.properties (또는 application.yml) 파일에서 DDL 자동 실행 옵션을 비활성화합니다. 예를 들면:
+none
+> 참고:
+> 개발 환경에서는 update나 create-drop 옵션을 사용하면 편리하지만,
+> 외래키 제약 조건 때문에 자동 변경이 실패하는 경우가 있으므로,
+> 스키마 변경은 직접 관리하는 것이 좋습니다.
+---
