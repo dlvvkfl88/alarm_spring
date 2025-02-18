@@ -1,0 +1,2 @@
+could not resolve all dependencies for configuration ' compileclasspath gradle 이 자꾸 떠서 build.gradle에 languageVersion = JavaLanguageVersion.of(17) 이 sdk23과 안맞아 languageVersion = JavaLanguageVersion.of(23)  변경후 좌측 새로고침 했더니
+빌드 성공 
